@@ -1,0 +1,178 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<h1>{{series.nombre}} - Detalles</h1>
+<div class="container_details">
+<img src="{{series.imagen.url}}">
+{% if series.tiene_categorias %}
+{% for categoria in series.categorias.all %}
+<h3 style="text-align: center; color: #ccc;">{{categoria.nombre}}{% if not forloop.last %},{% endif %}</h3>
+{% endfor %}
+{% else %}
+<h3>Genero No registrada</h3>
+{% endif %}
+</p>
+<p style=" text-align: center; margin: 3vw;">{{series.descripcion}}</p>
+</div>
+
+<hr>
+
+<div class="rating-display" style="text-align: center; margin: 20px 0;">
+    <h2 style="margin-bottom: 5px;">Calificación Promedio</h2>
+    {% with porcentaje=series.porcentaje_estrellas %}
+    <div class="star-rating-container">
+        <div class="stars-empty">★★★★★</div>
+        <div class="stars-filled" style="width: {{ porcentaje }}%;">★★★★★</div>
+    </div>
+    <p class="promedio-texto">
+        <strong>{{ series.promedio_calificacion|floatformat:1 }}</strong>
+        / 5.0 ({{ series.calificacion_set.count }} votos)
+    </p>
+    {% endwith %}
+</div>
+<hr>
+
+<div class="user-rating-section" style="text-align: center; margin: 20px 0;">
+    {% if user.is_authenticated %}
+        
+        <h2>Tu Voto</h2>
+        
+        {% if calificacion_actual > 0 %}
+            <p>Tu voto actual es de <strong>{{ calificacion_actual }}</strong> estrellas. Haz clic para cambiarlo.</p>
+        {% else %}
+            <p>¡Vota por esta serie!</p>
+        {% endif %}
+
+        <form method="POST" action="{% url 'calificar_contenido' %}" id="rating-form-serie">
+            {% csrf_token %}
+            
+            {{ rating_form.contenido_id }}
+            {{ rating_form.puntuacion }} 
+            {{ rating_form.tipo_contenido }}
+            
+            <div class="rating-stars-input" data-current-rating="{{ calificacion_actual }}">
+                <span data-value="5">★</span>
+                <span data-value="4">★</span>
+                <span data-value="3">★</span>
+                <span data-value="2">★</span>
+                <span data-value="1">★</span>
+            </div>
+            
+            <button type="submit" class="btn-calificar" style="margin-top: 10px; display: none;">Enviar Voto</button>
+        </form>
+
+    {% else %}
+        <p>Debes <a href="{% url 'signin' %}?next={{ request.path }}">iniciar sesión</a> para calificar esta serie.</p>
+    {% endif %}
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Usamos el ID del formulario para asegurarnos de que solo afectamos a las estrellas de esta página
+    const starContainer = document.querySelector('#rating-form-serie .rating-stars-input');
+    const ratingInput = document.querySelector('#rating-form-serie input[name="puntuacion"]');
+    const form = document.getElementById('rating-form-serie');
+    
+    if (starContainer && ratingInput && form) {
+        const currentRating = parseInt(starContainer.getAttribute('data-current-rating'));
+        const stars = starContainer.querySelectorAll('span');
+        
+        function setStarSelection(ratingValue) {
+            stars.forEach(star => {
+                const starValue = parseInt(star.getAttribute('data-value'));
+                if (starValue <= ratingValue) {
+                    star.classList.add('selected');
+                } else {
+                    star.classList.remove('selected');
+                }
+            });
+        }
+
+        setStarSelection(currentRating); // Inicializar
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.getAttribute('data-value'));
+                ratingInput.value = rating;
+                form.submit(); // Envío automático
+            });
+
+            star.addEventListener('mouseover', function() {
+                setStarSelection(parseInt(this.getAttribute('data-value')));
+            });
+
+            star.addEventListener('mouseout', function() {
+                setStarSelection(currentRating);
+            });
+        });
+    }
+});
+</script>
+<style>
+/* =======================================================
+ESTILOS GENERALES DE CALIFICACIÓN
+   ======================================================= */
+
+/* Contenedor de las estrellas (Promedio y Votación) */
+.star-rating-container {
+    display: inline-block;
+    position: relative;
+    font-size: 24px; /* Tamaño de las estrellas */
+    line-height: 1; 
+    letter-spacing: 2px; /* Espaciado entre estrellas */
+}
+
+/* Fondo de las 5 estrellas (vacías/grises) */
+.star-rating-container .stars-empty {
+    color: #ccc; 
+    position: relative;
+    z-index: 1;
+}
+
+/* Relleno de las estrellas (Promedio) */
+.star-rating-container .stars-filled {
+    color: gold; /* Color de relleno del promedio */
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden; /* CLAVE: Oculta el exceso para mostrar el porcentaje */
+    white-space: nowrap;
+    z-index: 2;
+}
+
+/* =======================================================
+ESTILOS DE VOTACIÓN DEL USUARIO (INTERACTIVO)
+   ======================================================= */
+
+/* Contenedor interactivo */
+.rating-stars-input {
+    /* RTL asegura que el hover de una estrella también rellene las de su izquierda */
+    direction: rtl; 
+    display: inline-block;
+    font-size: 36px; /* Estrellas más grandes para hacer clic */
+    unicode-bidi: bidi-override;
+}
+
+/* Estilo por defecto de cada estrella */
+.rating-stars-input span {
+    color: #ccc; 
+    cursor: pointer;
+    transition: color 0.2s;
+    display: inline-block;
+}
+
+/* 1. Efecto al pasar el ratón (hover) */
+/* Colorea la estrella actual y todas las anteriores */
+.rating-stars-input span:hover,
+.rating-stars-input span:hover ~ span {
+    color: orange;
+}
+
+/* 2. Estrella seleccionada (clase añadida con JavaScript) */
+/* Colorea la estrella seleccionada y todas las anteriores */
+.rating-stars-input span.selected,
+.rating-stars-input span.selected ~ span {
+    color: gold;
+}
+</style>
+{% endblock %}

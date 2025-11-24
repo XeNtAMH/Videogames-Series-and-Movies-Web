@@ -1,0 +1,18 @@
+{% load static %}
+{% load your_custom_filters %} 
+
+{% for elemento in lista_elementos %}
+<div class="card">
+    <h3>{{ elemento.titulo }}</h3>
+    
+    <div class="star-rating-container">
+        <div class="stars-empty">★★★★★</div>
+        
+        <div class="stars-filled" style="width: {{ elemento.porcentaje_estrellas }}%;">
+            ★★★★★
+        </div>
+    </div>
+    <span class="promedio-texto">({{ elemento.promedio_calificacion|floatformat:1 }})</span>
+
+    </div>
+{% endfor %}

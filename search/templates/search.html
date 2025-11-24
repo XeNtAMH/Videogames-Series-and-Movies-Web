@@ -1,0 +1,174 @@
+{% extends 'layouts/base.html' %}
+    
+{% block content %}
+<title>Búsqueda | Nerd Republic</title>
+
+<style>
+    /* Estilos CSS */
+    .search-container {
+        max-width: 600px;
+        margin: 20px auto;
+    }
+    .search-input {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 16px;
+        border: 2px solid #ddd;
+        border-radius: 25px;
+        outline: none;
+    }
+    .filter-buttons {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .filter-buttons button {
+        margin: 0 5px;
+        padding: 8px 15px;
+        border: 1px solid #007bff;
+        background-color: white;
+        color: #007bff;
+        cursor: pointer;
+        border-radius: 20px;
+        transition: all 0.2s;
+    }
+    .filter-buttons button.active {
+        background-color: #007bff;
+        color: white;
+    }
+
+    /* Zona para mostrar los resultados debajo de la barra */
+    #search-results-zone {
+        max-width: 600px;
+        margin: 10px auto;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        overflow: hidden; /* Para contener la lista de resultados */
+    }
+    .result-item {
+        padding: 10px;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-decoration: none;
+        color: #333;
+        transition: background-color 0.1s;
+    }
+    .result-item:hover {
+        background-color: #f0f0f0;
+    }
+    .list-group-title {
+        padding: 10px;
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+</style>
+
+<div class="search-page">
+    <div class="search-container">
+    <div class="filter-buttons" id="filter-buttons">
+        <button data-filter="todo" class="active">Todo</button>
+        <button data-filter="videojuego">Videojuegos</button>
+        <button data-filter="serie">Series</button>
+        <button data-filter="pelicula">Películas</button>
+    </div>
+
+    <input 
+        type="text" 
+        name="q" 
+        id="search-input"
+        class="search-input" 
+        placeholder="Escribe para buscar..."
+        autocomplete="off"
+    >
+</div>
+
+<div id="search-results-zone">
+    </div>
+
+</div> {# .search-page end #}
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const filterButtons = document.getElementById('filter-buttons');
+    const resultsContainer = document.getElementById('search-results-zone');
+    // Usamos el nombre de la URL de Django para que sea dinámica
+    const searchUrl = "{% url 'busqueda_dinamica' %}"; 
+    let activeFilter = 'todo';
+
+    // 1. Lógica para realizar la búsqueda (Fetch API)
+    const performSearch = async () => {
+        const query = searchInput.value.trim();
+        resultsContainer.innerHTML = ''; // Limpiar resultados anteriores
+        
+        // No buscar si el query está vacío
+        if (query.length === 0) {
+            return; 
+        }
+
+        // Construir la URL con los parámetros GET (q y filtro)
+        const urlWithParams = `${searchUrl}?q=${encodeURIComponent(query)}&filtro=${activeFilter}`;
+        
+        try {
+            // Realizar la petición
+            const response = await fetch(urlWithParams);
+            
+            if (!response.ok) {
+                throw new Error('La respuesta del servidor no fue válida.');
+            }
+
+            const data = await response.json();
+            renderResults(data.resultados);
+
+        } catch (error) {
+            console.error('Error durante la búsqueda:', error);
+            resultsContainer.innerHTML = '<p class="list-group-title text-danger">Error al cargar los resultados.</p>';
+        }
+    };
+
+    // 2. Lógica para convertir JSON a HTML y mostrarlo
+    const renderResults = (resultados) => {
+        if (resultados.length === 0) {
+            resultsContainer.innerHTML = '<p class="list-group-title text-muted">No se encontraron coincidencias.</p>';
+            return;
+        }
+
+        // Mapea la lista de resultados a una cadena HTML de enlaces <a>
+        const listHTML = resultados.map(result => `
+            <a href="${result.url}" class="result-item">
+                <span>${result.nombre}</span>
+                <span class="badge bg-secondary">${result.tipo}</span>
+            </a>
+        `).join('');
+
+        // Inyectar el HTML en la zona de resultados
+        resultsContainer.innerHTML = `<div class="list-group">${listHTML}</div>`;
+    };
+    
+    // 3. Manejar los clics en los botones de filtro
+    filterButtons.addEventListener('click', (e) => {
+        const target = e.target;
+        if (target.tagName === 'BUTTON') {
+            // Eliminar 'active' de todos los botones
+            filterButtons.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            
+            // Establecer el nuevo filtro activo y la clase 'active'
+            activeFilter = target.dataset.filter;
+            target.classList.add('active');
+            
+            // Ejecutar la búsqueda con el nuevo filtro
+            performSearch();
+        }
+    });
+
+    // 4. Disparar la búsqueda al escribir (función de "debounce" para limitar peticiones)
+    let debounceTimer;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(performSearch, 300); // Espera 300ms antes de buscar
+    });
+    
+</script>
+
+{% endblock %}

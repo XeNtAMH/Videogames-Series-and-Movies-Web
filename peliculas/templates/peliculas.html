@@ -1,0 +1,68 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<title>Peliculas | NERD REPUBLIC</title>
+<h1>PELICULAS</h1>
+<div class="container_movies">
+{% for p in peliculas %}
+<div class="movie_card">
+    <a href="{% url 'peliculasdetails' p.id %}">
+    <img src="{{ p.imagen.url }}" alt="{{p.nombre}} photo">
+    <h2>{{p.nombre}}</h2>
+    <p class="card-desc">{{p.descripcion}}</p>
+    <!-- Rating display for card -->
+    <div class="rating-small">
+        <div class="star-rating-container">
+            <div class="stars-empty">★★★★★</div>
+            <div class="stars-filled" style="width: {{ p.porcentaje_estrellas }}%;">★★★★★</div>
+        </div>
+        <span class="avg-text">{{ p.promedio_calificacion|floatformat:1 }} / 5 ({{ p.calificacion_set.count }})</span>
+    </div>
+</a></div>
+{% endfor %}
+</div>
+<style>
+.rating-small {
+    width: 100%;
+    justify-items: center;
+    text-align: center;
+}
+
+/* Transiciones para cambio de tonalidad */
+.rating-small .avg-text,
+.star-rating-container .stars-empty {
+    transition: color 0.18s ease;
+    color: #d8d8d8; /* tono claro por defecto */
+}
+
+/* Tonos más oscuros al poner el puntero sobre la tarjeta */
+.movie_card:hover .rating-small .avg-text,
+.serie_card:hover .rating-small .avg-text,
+.videogame_card:hover .rating-small .avg-text {
+    color: #222; /* texto más oscuro al hover */
+}
+
+.movie_card:hover .star-rating-container .stars-empty,
+.serie_card:hover .star-rating-container .stars-empty,
+.videogame_card:hover .star-rating-container .stars-empty {
+    color: #777; /* estrellas no coloreadas más oscuras al hover */
+}
+
+/* Asegurar que las estrellas llenas se mantengan doradas y con transición suave */
+.star-rating-container .stars-filled {
+    color: gold;
+    transition: width 0.18s ease, color 0.18s ease;
+}
+.card-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* número de líneas a mostrar */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* fallback de altura/line-height para navegadores sin soporte */
+    line-height: 1.2em;
+    max-height: 2.4em;
+}
+</style>
+{% endblock %}

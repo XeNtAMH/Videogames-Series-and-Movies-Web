@@ -1,0 +1,15 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<title>Sign In | NERD REPUBLIC</title>
+<h1>Inicia Sesion</h1>
+
+<form action="" method="POST">
+{% csrf_token %}
+{{error}}
+<div class="form_card">
+    {{form.as_p}}
+<button>Enviar</button>
+</div>
+</form>
+{% endblock %}

@@ -1,0 +1,356 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{% static 'img/favicon.png' %}" type="image/png">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-TmmXhI+C9+o0S5qG8K7n4I6fXv0n8R0wYt2jR3H5IeU8w+C8f9zH+kH+y8pQy/g" crossorigin="anonymous"></script>
+</head>
+
+
+<nav>
+    <a  href="{% url 'home' %}">HOME</a>
+    {% if user.is_authenticated %}
+    <a  href="{% url 'videojuegos' %}">VIDEOJUEGOS</a>
+    <a  href="{% url 'series' %}">SERIES</a>
+    <a  href="{% url 'peliculas' %}">PELICULAS</a>
+    <a  href="{% url 'search' %}">SEARCH </a>
+    <a href='/logout/'>LOG OUT</a>
+    {% else %}
+    <a href='/signup/'>SIGN UP</a>
+    <a href='/signin/'>SIGN IN</a>
+    {% endif %}
+    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=pedroglzzz08@gmail.com">CONTACTO</a>
+</nav>
+
+<style>
+body{
+    background:linear-gradient(rgb(255, 255, 255),rgb(0, 0, 0));
+    margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* garantiza que el fondo cubra la ventana */
+}
+
+.info{
+    background-color: aqua;
+    width: 90%;
+    display: flex;
+    flex-flow:row wrap ;
+    background:linear-gradient(#aaa,#fff);
+    box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 0.464);
+    margin: 0 auto 20px auto;
+    padding: 20px;
+}
+.info_foto{
+width: 50%;
+}
+.info_foto img{
+    width: 100%;
+    height: auto;
+    max-width: 220px;
+}
+.info_text{
+width: 50%;
+font-family: system-ui;
+}
+.section{
+    width: calc(100% - 40px);
+    max-width: 1100px;
+    min-height: 50vh;
+    border-radius:20px;
+    margin: 24px auto;
+    background:linear-gradient(#aaa,#fff);
+    box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 0.464);
+    display: flex;
+    flex-flow: row wrap;
+}
+.section_foto{
+    width: 50%;
+}
+.section_foto img{
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: cover;
+    object-position: 50% 50%;
+}
+.section_text{
+    width: 50%;
+    font-family:system-ui;
+}
+.section_text p{
+    padding: 10px;
+    margin-right:20px;
+    font-size: 0.9rem;
+}
+.section_movie{
+    overflow: hidden;
+}
+.section_serie{
+    overflow: hidden;
+}
+.section_videogame{
+    overflow: hidden;
+}
+
+nav{
+    position: relative;
+    width: 100%;
+    height: 50px;
+    margin: 0 auto;
+    background-color: #333;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+}
+nav a{
+    position: relative;
+    display: inline-block;
+    font-size: 1rem;
+    font-weight: 500;
+    color:#fff;
+    text-decoration: none;
+    padding: 0 23px;
+    z-index: 1;
+}
+h1{
+    font-family: none;
+    color: #000;
+    text-align: center;
+    padding: 10px;
+    font-size: 2.5rem;
+}
+footer{
+    text-align: center;
+    padding: 10vw;
+}
+footer a{
+    margin: 10px;
+    font-size: 120%;
+    color: #fff;
+}
+.container_sections{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+}
+.container_videogames{
+    display: flex;
+    justify-content: center;
+    flex-flow:row wrap;
+    gap: 8px;
+    padding: 8px;
+}
+.videogame_card{
+    position: relative;
+    overflow: hidden;
+    flex: 1 1 280px; /* flexible: grow, shrink, base width */
+    max-width: 340px;
+    height: 360px;
+    border-radius:20px;
+    margin: 12px;
+    background:linear-gradient(#fff,#aaa);
+    box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 0.464);
+}
+.videogame_card a{
+    text-decoration: none;
+    color: #000;
+}
+.videogame_card a h2{
+    text-align: center;
+}
+.videogame_card a p{
+    padding: 5px;
+}
+.videogame_card img{
+    height: 150px;
+    width: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+}
+.videogame_card:hover{
+    opacity: 90%;
+}
+
+.container_series{
+    display: flex;
+    justify-content: center;
+    flex-flow:row wrap;
+}
+.serie_card{
+    position: relative;
+    overflow: hidden;
+    flex: 1 1 280px;
+    max-width: 340px;
+    height: 360px;
+    border-radius:20px;
+    margin: 12px;
+    background:linear-gradient(#fff,#aaa);
+    box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 0.464);
+}
+.serie_card a{
+    text-decoration: none;
+    color: #000;
+}
+.serie_card a h2{
+    text-align: center;
+}
+.serie_card a p{
+    padding: 5px;
+}
+.serie_card img{
+    height: 150px;
+    width: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+}
+.serie_card img:first-child{
+    object-fit:contain;
+}
+.serie_card:hover{
+    opacity: 90%;
+}
+
+.container_movies{
+    display: flex;
+    justify-content: center;
+    flex-flow:row wrap;
+}
+.movie_card{
+    position: relative;
+    overflow: hidden;
+    flex: 1 1 280px;
+    max-width: 340px;
+    height: 360px;
+    border-radius:20px;
+    margin: 12px;
+    background:linear-gradient(#fff,#aaa);
+    box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 0.464);
+}
+.movie_card a{
+    text-decoration: none;
+    color: #000;
+}
+.movie_card a h2{
+    text-align: center;
+}
+.movie_card a p{
+    padding: 5px;
+}
+.movie_card img{
+    height: 150px;
+    width: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+}
+.movie_card img:first-child{
+    object-position: 10% 10%;
+}
+.movie_card:hover{
+    opacity: 90%;
+}
+
+.container_details{
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    color: #fff;
+}
+.container_details img{
+    height: auto;
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    object-position: 50% 50%;
+}
+
+.form_card{
+    margin: 0 auto;
+    width: 40%;
+    max-width: 520px;
+    background:linear-gradient(#aaa,#fff);
+    padding: 24px;
+    border-radius: 20px;
+    box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 0.464);
+}
+
+.form_card input{
+    width: 100%;
+    padding: 8px;
+}
+
+.form_card button{
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+}
+
+
+
+@media (max-width:1215px){
+    .videogame_card, .serie_card, .movie_card{
+        height: 340px;
+    }
+}
+
+@media (max-width:990px){
+    .section{
+        width: calc(100% - 24px);
+    }
+}
+
+@media (min-width:1075px){
+    .container_details img{
+        max-height: 500px;
+    }
+}
+
+@media (max-width:730px){
+    nav a{
+        font-size: 0.85rem;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width:600px){
+    .videogame_card, .serie_card, .movie_card{
+        flex-basis: 100%;
+        max-width: 100%;
+        height: auto;
+        margin: 8px 6px;
+    }
+    .videogame_card img, .serie_card img, .movie_card img{
+        height: 160px;
+    }
+    .form_card{
+        width: 90%;
+        padding: 18px;
+    }
+    h1{ font-size: 1.6rem; }
+    .page-content{
+        flex: 1 0 auto;
+    }
+}
+</style>
+
+<main class="page-content">
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer>
+    <a href="">Politica de licencia</a>
+    <a href="">Ayuda</a>
+    <a href="">&copy; Copyright 2025</a>
+</footer>
+</html>
